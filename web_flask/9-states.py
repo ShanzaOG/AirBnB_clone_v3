@@ -1,33 +1,48 @@
 #!/usr/bin/python3
-"""Runs an app with Flask framework"""
+"""
+    Sript that starts a Flask web application
+"""
 from flask import Flask, render_template
 from models import storage
-
-
+import os
 app = Flask(__name__)
 
 
 @app.teardown_appcontext
-def teardown(err):
-    """Close session"""
+def handle_teardown(self):
+    """
+        method to handle teardown
+    """
     storage.close()
 
 
 @app.route('/states', strict_slashes=False)
-def Display_states():
-    """Display html"""
-    states = storage.all("State")
-    return render_template("9-states.html", state=states)
+def state_list():
+    """
+        method to render states
+    """
+    states = storage.all('State').values()
+    return render_template(
+        "9-states.html",
+        states=states,
+        condition="states_list")
 
 
-@app.route('/states', strict_slashes=False)
-def id_states(id):
-    """Display html with id"""
-    for state in storage.all("State").values():
-        if state.id == id:
-            return render_template("9-states.html", state=state)
-    return render_template("9-states.html")
+@app.route('/states/<id>', strict_slashes=False)
+def states_id(id):
+    """
+        method to render state ids
+    """
+    state_all = storage.all('State')
+    try:
+        state_id = state_all[id]
+        return render_template(
+            '9-states.html',
+            state_id=state_id,
+            condition="state_id")
+    except:
+        return render_template('9-states.html', condition="not_found")
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
